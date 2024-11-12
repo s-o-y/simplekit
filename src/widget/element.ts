@@ -34,37 +34,57 @@ export abstract class SKElement {
     fill = "",
     border = "",
   }: SKElementProps = {}) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-    this.fill = fill;
-    this.border = border;
+    this.x = x ?? 0;
+    this.y = y ?? 0;
+    this.width = width ?? 0;
+    this.height = height ?? 0;
+    this.fill = fill ?? "";
+    this.border = border ?? "";
   }
 
   // top-left corner of element bounding box
-  x = 0;
-  y = 0;
+  protected _x: number = 0;
+  protected _y: number = 0;
 
-  protected _width: number | undefined;
-  set width(w: number | undefined) {
+  public set x(x: number) {
+    if (x !== this._x) {
+      this._x = x;
+    }
+  }
+
+  public get x(): number {
+    return this._x;
+  }
+
+  public set y(y: number) {
+    if (y !== this._y) {
+      this._y = y;
+    }
+  }
+
+  public get y(): number {
+    return this._y;
+  }
+
+  protected _width: number = 400;
+  public set width(w: number) {
     if (w !== this._width) {
       this._width = w;
       this.recalculateBasis();
     }
   }
-  get width(): number | undefined {
+  public get width(): number {
     return this._width;
   }
 
-  protected _height: number | undefined;
-  set height(h: number | undefined) {
+  protected _height: number = 400;
+  public set height(h: number) {
     if (h !== this._height) {
       this._height = h;
       this.recalculateBasis();
     }
   }
-  get height(): number | undefined {
+  public get height(): number {
     return this._height;
   }
 
@@ -134,19 +154,29 @@ export abstract class SKElement {
 
   //#region box model
 
+  // border colour (assume 1 px solid)
+  protected _border: string = "1px solid";
+
+  public get border(): string {
+    return this._border;
+  }
+  public set border(b: string) {
+    this._border = b;
+  }
+
   // margin
-  private _margin = 0;
-  set margin(m: number) {
+  protected _margin = 0;
+  public set margin(m: number) {
     if (m !== this.margin) {
       m = Math.max(0, m);
       this._margin = m;
       this.recalculateBasis();
     }
   }
-  get margin() {
+  public get margin() {
     return this._margin;
   }
-  get marginBox(): Size {
+  public get marginBox(): Size {
     return {
       width: this.widthLayout,
       height: this.heightLayout,
@@ -154,25 +184,25 @@ export abstract class SKElement {
   }
 
   // padding
-  private _padding = 0;
-  set padding(p: number) {
+  protected _padding = 0;
+  public set padding(p: number) {
     if (p !== this.padding) {
       p = Math.max(0, p);
       this._padding = p;
       this.recalculateBasis();
     }
   }
-  get padding() {
+  public get padding() {
     return this._padding;
   }
-  get paddingBox(): Size {
+  public get paddingBox(): Size {
     return {
       width: this.widthLayout - 2 * this.margin,
       height: this.heightLayout - 2 * this.margin,
     };
   }
 
-  get contentBox(): Size {
+  public get contentBox(): Size {
     return {
       width: this.widthLayout - 2 * this.margin - 2 * this.padding,
       height: this.heightLayout - 2 * this.margin - 2 * this.padding,
@@ -232,26 +262,13 @@ export abstract class SKElement {
     return handled;
   }
 
-  addEventListener(
-    type: string,
-    handler: EventHandler,
-    capture = false
-  ) {
+  addEventListener(type: string, handler: EventHandler, capture = false) {
     this.bindingTable.push({ type, handler, capture });
   }
 
-  removeEventListener(
-    type: string,
-    handler: EventHandler,
-    capture = false
-  ) {
+  removeEventListener(type: string, handler: EventHandler, capture = false) {
     this.bindingTable = this.bindingTable.filter(
-      (d) =>
-        !(
-          d.type == type &&
-          d.handler == handler &&
-          d.capture == capture
-        )
+      (d) => !(d.type == type && d.handler == handler && d.capture == capture)
     );
   }
 
@@ -277,17 +294,23 @@ export abstract class SKElement {
     return insideHitTestRectangle(
       mx,
       my,
-      this.x + this.margin,
-      this.y + this.margin,
+      (this.x ?? 0) + this.margin,
+      (this.y ?? 0) + this.margin,
       this.paddingBox.width,
       this.paddingBox.height
     );
   }
 
   // background colour
-  fill;
-  // border colour (assume 1 px solid)
-  border;
+  protected _fill: string = "";
+
+  public get fill(): string {
+    return this._fill;
+  }
+
+  public set fill(f: string) {
+    this._fill = f;
+  }
 
   // for debugging
   id = "";
@@ -296,7 +319,7 @@ export abstract class SKElement {
   draw(gc: CanvasRenderingContext2D): void {
     if (Settings.debug || this.debug) {
       gc.save();
-      gc.translate(this.x, this.y);
+      gc.translate(this.x ?? 0, this.y ?? 0);
       // draw the box model visualization
       this.drawBoxModel(gc);
 
