@@ -21,23 +21,22 @@ export class SKRadioButton extends SKElement {
     this.padding = Style.textPadding;
     if (options) this._options = options;
     this._options.forEach((o) => {
-      this._optionsElements.push(new SKCheckBox({text: o}))
+      this._optionsElements.push(new SKCheckBox({text: o, status:"unchecked"}))
       invalidateLayout();
     });
 
-    this._optionsElements[0].status = "checked";
-    for (let k = 1; k < this._optionsElements.length ; k++) {
-      this._optionsElements[k].status = "unchecked";
+    if (this._optionsElements.length > 0) {
+      this._optionsElements[0].status = "checked";
     }
+    
     if (backFill) this._backFill = backFill;
-    if (backFill) this.fill = backFill;
+    if (fill) this.fill = fill;
     this._optionsElements.forEach(o => o.fill = fill);
     this.setMinimalSize();
     this.addCheckBoxEventListener();
     this.calculateBasis();
     this.doLayout();
     this._layoutMethod = Layout.makeWrapRowLayout();
-    console.log(this.toString());
   }
 
   protected _backFill = "lightgrey";
@@ -177,10 +176,10 @@ draw(gc: CanvasRenderingContext2D) {
   const h = this.paddingBox.height;
 
   // Draw the outer container essentially
-  if(this.fill){
+  if(this.backFill){
     gc.beginPath();
     gc.roundRect(this.x, this.y, w, h, this._radius);
-    gc.fillStyle =  this.fill;
+    gc.fillStyle =  this.backFill;
     gc.fill();
   }
   
@@ -207,51 +206,6 @@ draw(gc: CanvasRenderingContext2D) {
   // let element draw debug if flag is set
   super.draw(gc);
 }
-
-
-// draw(gc: CanvasRenderingContext2D) {
-//   const w = this.paddingBox.width;
-//   const h = this.paddingBox.height;
-
-//   gc.save();
-
-//   gc.translate(this._margin, this._margin);
-
-//   // draw the checkboxes
-//   this._optionsElements.forEach(o => {
-//     o.draw(gc);
-//   })
-
-//   // thick highlight rect
-//   if (this.state == "hover" || this.state == "down") {
-//     gc.beginPath();
-//     gc.roundRect(this.x, this.y, w, h, this.radius);
-//     gc.strokeStyle = this._highlightColour;
-//     gc.fillStyle = this._darkest;
-//     gc.fill();
-//     gc.lineWidth = 8;
-//     gc.stroke();
-    
-//   }
-
-//   // normal background
-//   gc.beginPath();
-//   gc.roundRect(this.x, this.y, this.width, this.height, this.radius);
-//   gc.fillStyle = this.state === "down" ? this._highlightColour : this.fill;
-//   gc.strokeStyle = this.border;
-//   // change fill to show down state
-//   gc.lineWidth = this.state === "down" ? 4 : 2;
-//   gc.fill();
-//   gc.stroke();
-//   gc.clip(); // clip text if it's wider than text area
-
-  
-//   gc.restore();
-
-//   // element draws debug viz if flag is set
-//   super.draw(gc);
-// }
-
 
 protected _layoutMethod: LayoutMethod | undefined;
 set layoutMethod(lm: LayoutMethod) {
@@ -290,10 +244,6 @@ doLayout(width?: number, height?: number): Size {
     return { width: this.widthLayout, height: this.heightLayout };
   }
 }
-
-
-
-
 
 public updateCurrentSelection(optionText: string) {
   for (let j = 0; j < this._optionsElements.length; j++) {
